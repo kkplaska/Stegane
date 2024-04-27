@@ -1,30 +1,29 @@
 #include "fmt/core.h"
 #include "functions.hpp"
 
-auto f_info() -> void {
+auto f_info(std::string const& pathToFile) -> int{
     fmt::println("INFO!");
+    return 0;
 }
 
-auto f_check() -> void {
+auto f_check(std::string const& pathToFile, std::string const& message) -> int{
     fmt::println("CHECK!");
+    return 0;
 }
 
-auto f_help() -> void {
+auto f_help() -> int{
     fmt::println("HELP!");
+    return 0;
 }
 
 auto main(int argc, const char* argv[]) -> int {
-    auto checkTooManyArgs = [argc](int n) -> bool {
-        if(argc > n){
+
+    {// Sprawdzenie czy nie ma więcej niż trzy argumenty [flaga, ścieżka do pliku, wiadomość]
+        if(argc > 4){
             fmt::println("Too many arguments!");
-            return true;
+            return 1;
         }
-        return false;
-    };
-
-
-    // Sprawdzenie czy nie ma więcej niż trzy argumenty [flaga, ścieżka do pliku, wiadomość]
-    if(checkTooManyArgs(4)) return 1;
+    }
 
     enum class Flag {
         INCORRECT, INFO, ENCRYPT, DECRYPT, CHECK, HELP
@@ -93,38 +92,41 @@ auto main(int argc, const char* argv[]) -> int {
         case Flag::INCORRECT:
             fmt::println("Wrong flag! Try use -h to get help!");
             return 3;
-        case Flag::HELP:
-            f_help();
-            break;
         case Flag::INFO:
         case Flag::DECRYPT:
-            if(checkTooManyArgs(3)) return 1;
-
+            if(argc != 3){
+                fmt::println("Bad number of arguments!");
+                return 2;
+            }
             break;
         case Flag::ENCRYPT:
-            f_encrypt();
-            break;
         case Flag::CHECK:
-            f_check();
+            if(argc != 4){
+                fmt::println("Bad number of arguments!");
+                return 2;
+            }
+        case Flag::HELP:
+            break;
     }
+
+    auto returnCode = int(0);
     switch (choseFlag) {
-        case Flag::INCORRECT:
-            break;
         case Flag::INFO:
-            f_info();
+            returnCode = f_info(std::string(argv[2]));
             break;
         case Flag::ENCRYPT:
-            f_encrypt();
+            returnCode = f_encrypt(std::string(argv[2]),std::string(argv[3]));
             break;
         case Flag::DECRYPT:
-            f_decrypt();
+            returnCode = f_decrypt(std::string(argv[2]));
             break;
         case Flag::CHECK:
-            f_check();
+            returnCode = f_check(std::string(argv[2]),std::string(argv[3]));
             break;
         case Flag::HELP:
+            returnCode = f_help();
             break;
     }
 
-    return 0;
+    return returnCode;
 }
