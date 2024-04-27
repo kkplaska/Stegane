@@ -13,5 +13,10 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(fmt)
 
-add_executable(Project_Steganography main.cpp)
+add_executable(Project_Steganography
+        main.cpp
+        functions.hpp
+        crypto.cpp
+)
+
 target_link_libraries(Project_Steganography fmt)
