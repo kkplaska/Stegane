@@ -1,24 +1,11 @@
 #include "fmt/core.h"
 #include "functions.hpp"
-
-auto f_info(std::string const& pathToFile) -> int{
-    fmt::println("INFO!");
-    return 0;
-}
-
-auto f_check(std::string const& pathToFile, std::string const& message) -> int{
-    fmt::println("CHECK!");
-    return 0;
-}
-
-auto f_help() -> int{
-    fmt::println("HELP!");
-    return 0;
-}
+#include <filesystem>
 
 auto main(int argc, const char* argv[]) -> int {
-
-    {// Sprawdzenie czy nie ma więcej niż trzy argumenty [flaga, ścieżka do pliku, wiadomość]
+    // Sprawdzenie, czy nie ma więcej niż trzy argumenty
+    // [flaga, ścieżka do pliku, wiadomość]
+    {
         if(argc > 4){
             fmt::println("Too many arguments!");
             return 1;
@@ -29,6 +16,7 @@ auto main(int argc, const char* argv[]) -> int {
         INCORRECT, INFO, ENCRYPT, DECRYPT, CHECK, HELP
     };
 
+    // Rozszyfrowanie argumentów
     auto choseFlag = Flag();
     if(argc == 1) choseFlag = Flag::HELP;
     else {
@@ -88,29 +76,53 @@ auto main(int argc, const char* argv[]) -> int {
         }
     }
 
+    // Sprawdzenie, czy są dokładnie dwa argumenty
+    // [flaga, ścieżka do pliku]
+    if((choseFlag == Flag::INFO || choseFlag == Flag::DECRYPT) && argc != 3){
+        fmt::println("Bad number of arguments!");
+        return 2;
+    }
+    // Sprawdzenie, czy są dokładnie trzy argumenty
+    // [flaga, ścieżka do pliku, wiadomość]
+    if((choseFlag == Flag::CHECK || choseFlag == Flag::ENCRYPT) && argc != 4){
+        fmt::println("Bad number of arguments!");
+        return 2;
+    }
+
+    // Sprawdzenie, czy plik jest obsługiwany
+    if(argc > 1 && choseFlag != Flag::INCORRECT && choseFlag != Flag::HELP){
+        auto file = std::filesystem::path(argv[2]);
+        if(!std::filesystem::exists(file)){
+            fmt::println("The path is wrong, or the file doesn't exist!");
+            return 3;
+        }
+        if(!std::filesystem::is_regular_file(file)){
+            fmt::println("The file is corrupted!");
+            return 4;
+        }
+        if(file.extension() != ".bmp" && file.extension() != ".png"){
+            fmt::println("{} is wrong format of the file! \n Try using a program with .bmp or .png file", file.extension().string());
+            return 5;
+        }
+        // Sprawdzenie uprawnień do odczytu
+        // Ewentualnie do dalszego rozważenia
+        if(
+            std::filesystem::perms::none == (std::filesystem::status(file).permissions() & std::filesystem::perms::owner_read)
+            || std::filesystem::perms::none == (std::filesystem::status(file).permissions() & std::filesystem::perms::owner_write)
+         ){
+            fmt::println("Access to the file {} is not allowed!", file.filename().string());
+            return 6;
+        }
+
+    }
+
+    // Wskazania dalszego działania programu w zgodzie z flagą
+    int returnCode;
     switch (choseFlag) {
         case Flag::INCORRECT:
             fmt::println("Wrong flag! Try use -h to get help!");
-            return 3;
-        case Flag::INFO:
-        case Flag::DECRYPT:
-            if(argc != 3){
-                fmt::println("Bad number of arguments!");
-                return 2;
-            }
+            returnCode = 7;
             break;
-        case Flag::ENCRYPT:
-        case Flag::CHECK:
-            if(argc != 4){
-                fmt::println("Bad number of arguments!");
-                return 2;
-            }
-        case Flag::HELP:
-            break;
-    }
-
-    auto returnCode = int(0);
-    switch (choseFlag) {
         case Flag::INFO:
             returnCode = f_info(std::string(argv[2]));
             break;

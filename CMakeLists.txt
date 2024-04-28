@@ -17,6 +17,7 @@ add_executable(Project_Steganography
         main.cpp
         functions.hpp
         crypto.cpp
+        other.cpp
 )
 
 target_link_libraries(Project_Steganography fmt)

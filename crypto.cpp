@@ -8,4 +8,5 @@ auto f_encrypt(std::string const& pathToFile, std::string const& message) -> int
 
 auto f_decrypt(std::string const& pathToFile) -> int{
     fmt::println("DECRYPT!");
+    return 15;
 }
