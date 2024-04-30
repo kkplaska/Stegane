@@ -17,6 +17,7 @@ add_executable(Project_Steganography
         main.cpp
         functions.hpp
         crypto.cpp
+        info.cpp
         other.cpp
 )
 
