@@ -1,8 +1,9 @@
 #include "fmt/core.h"
 #include "functions.hpp"
 #include <filesystem>
+#include <map>
 
-auto main(int argc, const char* argv[]) -> int {
+auto main(const int argc, const char* argv[]) -> int {
     // Sprawdzenie, czy nie ma więcej niż trzy argumenty
     // [flaga, ścieżka do pliku, wiadomość]
     {
@@ -20,60 +21,22 @@ auto main(int argc, const char* argv[]) -> int {
     auto choseFlag = Flag();
     if(argc == 1) choseFlag = Flag::HELP;
     else {
-        auto arg = std::string(argv[1]);
-        if(arg.size() == 2){
-            switch(arg.at(1)){
-                case 'i':
-                    choseFlag = Flag::INFO;
-                    break;
-                case 'e':
-                    choseFlag = Flag::ENCRYPT;
-                    break;
-                case 'd':
-                    choseFlag = Flag::DECRYPT;
-                    break;
-                case 'c':
-                    choseFlag = Flag::CHECK;
-                    break;
-                case 'h':
-                    choseFlag = Flag::HELP;
-                    break;
-                default:
-                    choseFlag = Flag::INCORRECT;
-            }
-        }
-        else {
-            //Dla jednego myślnika at(1), dla dwóch at(2)
-            switch(arg.at(1)){
-                case 'i':
-                    if(arg == "-info"){
-                        choseFlag = Flag::INFO;
-                    }
-                    break;
-                case 'e':
-                    if(arg == "-encrypt"){
-                        choseFlag = Flag::ENCRYPT;
-                    }
-                    break;
-                case 'd':
-                    if(arg == "-decrypt"){
-                        choseFlag = Flag::DECRYPT;
-                    }
-                    break;
-                case 'c':
-                    if(arg == "-check"){
-                        choseFlag = Flag::CHECK;
-                    }
-                    break;
-                case 'h':
-                    if(arg == "-help"){
-                        choseFlag = Flag::HELP;
-                    }
-                    break;
-                default:
-                    choseFlag = Flag::INCORRECT;
-            }
-        }
+        auto flags = std::map<std::string, Flag>{
+                {"-i",Flag::INFO},
+                {"-info",Flag::INFO},
+                {"-e",Flag::ENCRYPT},
+                {"-encrypt",Flag::ENCRYPT},
+                {"-d",Flag::DECRYPT},
+                {"-decrypt",Flag::DECRYPT},
+                {"-c",Flag::CHECK},
+                {"-check",Flag::CHECK},
+                {"-h",Flag::HELP},
+                {"-help",Flag::HELP}
+        };
+        // Sprawdza, czy flaga znajduje się w mapie.
+        // Jeżeli nie dodaje ją i traktuje jako niepoprawną
+        flags.try_emplace(argv[1],Flag::INCORRECT);
+        choseFlag = flags[argv[1]];
     }
 
     // Sprawdzenie, czy są dokładnie dwa argumenty
