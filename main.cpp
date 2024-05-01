@@ -87,16 +87,16 @@ auto main(const int argc, const char* argv[]) -> int {
             returnCode = 7;
             break;
         case Flag::INFO:
-            returnCode = f_info(std::string(argv[2]));
+            returnCode = f_info(std::filesystem::path(argv[2]));
             break;
         case Flag::ENCRYPT:
-            returnCode = f_encrypt(std::string(argv[2]),std::string(argv[3]));
+            returnCode = f_encrypt(std::filesystem::path(argv[2]),std::string(argv[3]));
             break;
         case Flag::DECRYPT:
-            returnCode = f_decrypt(std::string(argv[2]));
+            returnCode = f_decrypt(std::filesystem::path(argv[2]));
             break;
         case Flag::CHECK:
-            returnCode = f_check(std::string(argv[2]),std::string(argv[3]));
+            returnCode = f_check(std::filesystem::path(argv[2]),std::string(argv[3]));
             break;
         case Flag::HELP:
             returnCode = f_help();

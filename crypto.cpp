@@ -3,8 +3,7 @@
 #include "fmt/ranges.h"
 #include "functions.hpp"
 
-auto f_encrypt(std::string const& pathToFile, std::string const& message) -> int{
-    auto file = std::filesystem::path(pathToFile);
+auto f_encrypt(std::filesystem::path const& file, std::string const& message) -> int{
     if(file.extension() == ".bmp"){
         auto sizeOfImage = BMP::getSizeOfImage(file);
         fmt::println("{}",BMP::getNumOfPadding(sizeOfImage));
@@ -32,13 +31,12 @@ auto f_encrypt(std::string const& pathToFile, std::string const& message) -> int
     return 12;
 }
 
-auto f_decrypt(std::string const& pathToFile) -> int{
+auto f_decrypt(std::filesystem::path const& file) -> int{
     fmt::println("DECRYPT!");
     return 15;
 }
 
-auto f_check(std::string const& pathToFile, std::string const& message) -> int{
-    auto file = std::filesystem::path(pathToFile);
+auto f_check(std::filesystem::path const& file, std::string const& message) -> int{
     auto numberOfChar = message.size();
     auto compar = int();
     {

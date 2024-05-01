@@ -2,8 +2,7 @@
 #include <chrono>
 #include "functions.hpp"
 #include "fmt/core.h"
-auto f_info(std::string const& pathToFile) -> int{
-    auto file = std::filesystem::path(pathToFile);
+auto f_info(std::filesystem::path const& file) -> int{
     fmt::println("Information about file: {}", file.filename().string());
     // File extension
     auto fExt = file.extension().string();
