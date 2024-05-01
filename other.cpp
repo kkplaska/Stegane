@@ -59,3 +59,13 @@ namespace BMP{
         return soi.width % 4;
     }
 }
+
+auto sizeOfImageHelper(std::filesystem::path const& file) -> SizeOfImage{
+    if(file.extension() == ".bmp") {
+        return BMP::getSizeOfImage(file);
+    }
+    else if (file.extension() == ".png") {
+        return PNG::getSizeOfImage(file);
+    }
+    return SizeOfImage{0,0};
+};

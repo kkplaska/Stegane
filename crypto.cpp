@@ -5,8 +5,20 @@
 
 auto f_encrypt(std::filesystem::path const& file, std::string const& message) -> int{
     if(file.extension() == ".bmp"){
-        auto sizeOfImage = BMP::getSizeOfImage(file);
-        fmt::println("{}",BMP::getNumOfPadding(sizeOfImage));
+        {
+            auto sizeOfImage = BMP::getSizeOfImage(file);
+            fmt::println("{}",BMP::getNumOfPadding(sizeOfImage));
+        }
+
+
+        {
+//        fmt::println("{}", numberOfBytes);
+//        fmt::println("{}", sizeof(char));
+        fmt::println("{}", sizeof(std::byte));
+//        fmt::println("{}", sizeof(char8_t));
+//        fmt::println("{}", sizeof(int));
+        fmt::println("{}", sizeof(bool));
+        }
 
         {
             auto buffer = std::vector<std::byte>(4);
@@ -21,9 +33,10 @@ auto f_encrypt(std::filesystem::path const& file, std::string const& message) ->
             fmt::println("{}",buffer);
 
 
-
         }
 
+
+    } else {
 
     }
 
@@ -38,30 +51,9 @@ auto f_decrypt(std::filesystem::path const& file) -> int{
 
 auto f_check(std::filesystem::path const& file, std::string const& message) -> int{
     auto numberOfChar = message.size();
-    auto compar = int();
-    {
-        auto sizeOfImageLambda = [&]()->SizeOfImage{
-            if(file.extension() == ".bmp") {
-                return BMP::getSizeOfImage(file);
-            }
-            else if (file.extension() == ".png") {
-                return PNG::getSizeOfImage(file);
-            }
-            return SizeOfImage{0,0};
-        };
-        auto sizeOfImage = sizeOfImageLambda();
-        auto numberOfBytes = sizeOfImage.width * sizeOfImage.height / 8;
-        compar = numberOfBytes;
-
-//        fmt::println("{}", numberOfBytes);
-//        fmt::println("{}", sizeof(char));
-//        fmt::println("{}", sizeof(std::byte));
-//        fmt::println("{}", sizeof(char8_t));
-//        fmt::println("{}", sizeof(int));
-    }
-    fmt::println("{} <> {}", numberOfChar, compar);
-
-    if(numberOfChar <= compar){
+    auto sizeOfImage = sizeOfImageHelper(file);
+    auto numberOfBytes = sizeOfImage.width * sizeOfImage.height / 8;
+    if(numberOfChar <= numberOfBytes){
         fmt::println("A message can be encrypt in file {}!", file.filename().string());
         return 0;
     }

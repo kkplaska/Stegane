@@ -29,3 +29,4 @@ namespace PNG {
     auto getSizeOfImage(std::filesystem::path const& file) -> SizeOfImage;
 }
 
+auto sizeOfImageHelper(std::filesystem::path const& file) -> SizeOfImage;
