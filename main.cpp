@@ -8,7 +8,7 @@ auto main(const int argc, const char* argv[]) -> int {
     // [flaga, ścieżka do pliku, wiadomość]
     {
         if(argc > 4){
-            fmt::println("Too many arguments!");
+            fmt::println("The program has been launched with too many arguments!");
             return 1;
         }
     }
@@ -18,7 +18,7 @@ auto main(const int argc, const char* argv[]) -> int {
     };
 
     // Rozszyfrowanie argumentów
-    auto choseFlag = Flag();
+    Flag choseFlag;
     if(argc == 1) choseFlag = Flag::HELP;
     else {
         auto flags = std::map<std::string, Flag>{
@@ -34,7 +34,7 @@ auto main(const int argc, const char* argv[]) -> int {
                 {"-help",Flag::HELP}
         };
         // Sprawdza, czy flaga znajduje się w mapie.
-        // Jeżeli nie dodaje ją i traktuje jako niepoprawną
+        // Jeżeli nie, dodaje ją i traktuje jako niepoprawną
         flags.try_emplace(argv[1],Flag::INCORRECT);
         choseFlag = flags[argv[1]];
     }
@@ -42,13 +42,13 @@ auto main(const int argc, const char* argv[]) -> int {
     // Sprawdzenie, czy są dokładnie dwa argumenty
     // [flaga, ścieżka do pliku]
     if((choseFlag == Flag::INFO || choseFlag == Flag::DECRYPT) && argc != 3){
-        fmt::println("Bad number of arguments!");
+        fmt::println("The program has been launched with bad number of arguments!");
         return 2;
     }
     // Sprawdzenie, czy są dokładnie trzy argumenty
     // [flaga, ścieżka do pliku, wiadomość]
     if((choseFlag == Flag::CHECK || choseFlag == Flag::ENCRYPT) && argc != 4){
-        fmt::println("Bad number of arguments!");
+        fmt::println("The program has been launched with bad number of arguments!");
         return 2;
     }
 
@@ -83,7 +83,7 @@ auto main(const int argc, const char* argv[]) -> int {
     int returnCode;
     switch (choseFlag) {
         case Flag::INCORRECT:
-            fmt::println("Wrong flag! Try use -h to get help!");
+            fmt::println("The program has been launched with wrong flag! Try use -h to get help!");
             returnCode = 7;
             break;
         case Flag::INFO:
