@@ -1,6 +1,5 @@
 #include <fstream>
 #include "fmt/core.h"
-#include "fmt/ranges.h"
 #include "functions.hpp"
 
 auto f_encrypt(std::filesystem::path const& file, std::string message) -> int {
@@ -16,43 +15,35 @@ auto f_encrypt(std::filesystem::path const& file, std::string message) -> int {
     auto input = std::fstream(file, std::ios::binary | std::ios::in);
     auto buffer = std::vector<char>(512);
 
+    //Pierwsze 4 bajty -> długość wiadomości
+    auto sizeOfMessage = int(message.size());
+    // 4, bo 4 Bajty
+    for (int i = 0; i < 4; ++i) {
+        message.insert(i, 1, char(53 + ((sizeOfMessage >> (32 - 8 * (i + 1))) & 255)));
+    }
+
+
+    //XORowanie wiadomości
+    for (auto& character : message) {
+        character ^= 53;
+    }
+
+//    {
+//        for (auto c : message) {
+//            fmt::print("{} ", int(c));
+//        }
+//        fmt::println("");
+//        for (auto c : message) {
+//            fmt::print("{0:b} ", int(c));
+//        }
+//        fmt::println("");
+//    }
+
     if(file.extension() == ".bmp"){
         char startPosition;
         input.seekg(0xA);
         input.read(&startPosition,1);
         input.seekg(0);
-
-//        // DEBUG START
-//        fmt::println("{}",message.size());
-//        for (auto& ch : message) {
-//            ch = 0x4A;
-//        }
-//        // DEBUG END
-
-        //Pierwsze 4 bajty -> długość wiadomości
-        auto sizeOfMessage = int(message.size());
-        // 4, bo 4 Bajty
-        for (int i = 0; i < 4; ++i) {
-            message.insert(i, 1, char(53 + ((sizeOfMessage >> (32 - 8 * (i + 1))) & 255)));
-        }
-
-
-        //XORowanie wiadomości
-        for (auto& character : message) {
-            character ^= 53;
-        }
-
-        {
-            for (auto c : message) {
-                fmt::print("{} ", int(c));
-            }
-            fmt::println("");
-            for (auto c : message) {
-                fmt::print("{0:b} ", int(c));
-            }
-            fmt::println("");
-        }
-
 
         // Przepisywanie nagłówka
         {
@@ -141,14 +132,10 @@ auto f_encrypt(std::filesystem::path const& file, std::string message) -> int {
 }
 
 auto f_decrypt(std::filesystem::path const& file) -> int{
-    {
-        fmt::println("START");
-    }
-//     /*
     auto sizeOfImage = sizeOfImageHelper(file);
-
     auto input = std::fstream(file, std::ios::binary | std::ios::in);
-    auto buffer = std::vector<char>(512);
+    auto bufferSize = int(512);
+    auto buffer = std::vector<char>(bufferSize);
 
     if(file.extension() == ".bmp"){
         char startPosition;
@@ -158,82 +145,92 @@ auto f_decrypt(std::filesystem::path const& file) -> int{
 
         auto sizeOfMessage = int();
         auto lineIndex = int(0);
-        auto paddings = sizeOfImage.width % 4;
+        // Number Of Paddings
+        auto nop = sizeOfImage.width % 4;
 
+        // Pierwszy bufor 512B
+        auto readBufferIndex = int(0);
+        input.read(&buffer[0], bufferSize);
+
+        auto paddingHelper = [&]() mutable -> void {
+            if(lineIndex == sizeOfImage.width){
+                lineIndex = 0;
+                for (int j = 0; j < nop; ++j) {
+                    readBufferIndex++;
+                }
+            }
+        };
+
+        auto bufferANDHelper = [&]() mutable -> void {
+            for (int i = 0; i < input.gcount(); ++i) {
+                buffer.at(i) &= 1;
+            }
+        };
+
+        bufferANDHelper();
+
+        // Pierwsze 4 Bajty
         {
+            // som <> SizeOfMessage
             auto somBuffer = std::vector<char>(4);
-            auto readBufferSize = somBuffer.size() * 8;
-            std::vector<char> readBuffer;
-            if(readBufferSize <= sizeOfImage.width){
-                readBuffer = std::vector<char>(readBufferSize);
-            }
-            else {
-                readBuffer = std::vector<char>(readBufferSize + (paddings * sizeOfImage.height));
-            }
-            input.read(&readBuffer[0],ssize_t(readBuffer.size()));
-
-            for (auto& element : readBuffer) {
-                element &= 1;
-            }
-
-            for (int i = 0; i < somBuffer.size(); ++i) {
-                for (int j = 0; j < 8; ++j) {
-                    somBuffer.at(i) <<= 1;
-                    somBuffer.at(i) |= readBuffer.at(i * 8 + j);
+            for(char& somElement : somBuffer) {
+                for (int j = 0; j < 8; ++j, ++readBufferIndex) {
+                    somElement <<= 1;
+                    somElement |= buffer.at(readBufferIndex);
                 }
-                somBuffer.at(i) ^= 53;
-                somBuffer.at(i) -= 53;
+                somElement ^= 53;
+                somElement -= 53;
                 sizeOfMessage <<= 8;
-                sizeOfMessage += somBuffer.at(i);
-
-//                if(lineIndex == sizeOfImage.width){
-//                    lineIndex = 0;
-//                    for (int j = 0; j < sizeOfImage.width % 4; ++j) {
-//                        bufferIndex++;
-//                    }
-//                }
-            }
-        }
-
-        {
-            auto messageBuffer = std::vector<char>(sizeOfMessage);
-            auto readBufferSize = sizeOfMessage * 8;
-            std::vector<char> readBuffer;
-            if(readBufferSize <= sizeOfImage.width){
-                readBuffer = std::vector<char>(readBufferSize);
-            }
-            else {
-                readBuffer = std::vector<char>(readBufferSize + (paddings * sizeOfImage.height));
-            }
-
-            input.read(&readBuffer[0],ssize_t(readBuffer.size()));
-
-            for (auto& element : readBuffer) {
-                element &= 1;
-            }
-
-            auto lineIndex = int(0);
-
-            for (int i = 0; i < messageBuffer.size(); ++i) {
-                for (int j = 0; j < 8; ++j) {
-                    messageBuffer.at(i) <<= 1;
-                    messageBuffer.at(i) |= readBuffer.at((i * 8) + j);
-                }
-                messageBuffer.at(i) ^= 53;
+                sizeOfMessage += somElement;
                 lineIndex++;
 
                 // Pilnowanie paddingów
-                if(lineIndex == sizeOfImage.width){
-                    lineIndex = 0;
-                    for (int j = 0; j < sizeOfImage.width % 4; ++j) {
-                        ++i;
-                    }
-                }
+                paddingHelper();
             }
-
-            auto message = std::string(messageBuffer.begin(),messageBuffer.end());
-            fmt::println("{}",message);
         }
+
+        auto messageBuffer = std::vector<char>(sizeOfMessage);
+        auto messageBufferIndex = int(0);
+        auto byteVisor = int(0);
+
+        // Kontynuacja do 512 B lub końca, jeśli jest mniejszy
+        auto nextBuffer = [&]() mutable -> bool {
+            for ( ; readBufferIndex < input.gcount(); ++readBufferIndex){
+                messageBuffer.at(messageBufferIndex) <<= 1;
+                messageBuffer.at(messageBufferIndex) |= buffer.at(readBufferIndex);
+
+                byteVisor++;
+                if(byteVisor % 8 == 0){
+                    byteVisor = 0;
+                    messageBufferIndex++;
+                }
+
+                if(messageBufferIndex == sizeOfMessage){
+                    return true;
+                }
+
+                // Pilnowanie paddingów
+                paddingHelper();
+            }
+            return false;
+        };
+        nextBuffer();
+
+        while(messageBufferIndex < (sizeOfMessage + sizeOfImage.height * nop) + 1){
+            input.read(&buffer[0], bufferSize);
+            readBufferIndex = int(0);
+            bufferANDHelper();
+            if(nextBuffer()){
+                break;
+            };
+        }
+
+        for(auto& character : messageBuffer){
+            character ^= 53;
+        }
+
+        auto message = std::string(messageBuffer.begin(),messageBuffer.end());
+        fmt::println("{}",message);
     }
     return 15;
 }
