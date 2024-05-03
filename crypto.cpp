@@ -31,7 +31,6 @@ auto f_encrypt(std::filesystem::path const& file, std::string message) -> int{
         for (int i = 0; i < 8; ++i) {
             message.insert(i, 1, char(53 + ((sizeOfMessage >> (64 - 8 * (i + 1))) & 255)));
         }
-        sizeOfMessage ^= 53;
 
 //        {
 //            for (auto c : message) {
@@ -97,8 +96,7 @@ auto f_encrypt(std::filesystem::path const& file, std::string message) -> int{
 
             if(buffer.size() != input.gcount()){
                 auto tmp = std::vector<char>(buffer.begin(), buffer.begin() + input.gcount());
-                buffer = tmp;
-                output.write(&buffer[0],input.gcount());
+                output.write(&tmp[0],input.gcount());
             }
             else {
                 while(input.read(&buffer[0],buffer.size())){
@@ -107,8 +105,7 @@ auto f_encrypt(std::filesystem::path const& file, std::string message) -> int{
 
                 if(buffer.size() != input.gcount()){
                     auto tmp = std::vector<char>(buffer.begin(), buffer.begin() + input.gcount());
-                    buffer = tmp;
-                    output.write(&buffer[0],input.gcount());
+                    output.write(&tmp[0],input.gcount());
                 }
             }
 
