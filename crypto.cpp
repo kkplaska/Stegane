@@ -233,10 +233,6 @@ auto f_decrypt(std::filesystem::path const& file) -> int{
             character ^= 53;
         }
 
-        for (auto x : messageBuffer) {
-            fmt::print("{0:X} ", x);
-        }
-
         auto message = std::string(messageBuffer.begin(),messageBuffer.end());
         fmt::println("{}",message);
     }
