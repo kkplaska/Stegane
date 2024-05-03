@@ -2,14 +2,14 @@
 #include "functions.hpp"
 #include "fmt/core.h"
 
-namespace PNG {
+namespace PPM {
+    //Pozostałość po PNG, zmienić na PPM
     auto getSizeOfImage(std::filesystem::path const& file) -> SizeOfImage{
         auto size = std::vector<int>(2);
-        auto buffer = std::vector<std::byte>(8);
-        // Musi być ifstream, istream nie działa
-        auto input = std::ifstream(file, std::ios_base::binary);
+        auto buffer = std::vector<char>(8);
+        auto input = std::fstream(file, std::ios::binary | std::ios::in);
         input.seekg(0x10); // Skok do 16 bitu
-        input.read(reinterpret_cast<char*>(buffer.data()),8);
+        input.read(&buffer[0],8);
         //Width
         auto width = int((int(buffer[0]) << 24)
                        | (int(buffer[1]) << 16)
@@ -27,11 +27,10 @@ namespace PNG {
 namespace BMP{
     auto getSizeOfImage(std::filesystem::path const& file) -> SizeOfImage{
         auto size = std::vector<int>(2);
-        auto buffer = std::vector<std::byte>(8);
-        // Musi być ifstream, istream nie działa
-        auto input = std::ifstream(file, std::ios_base::binary);
+        auto buffer = std::vector<char>(8);
+        auto input = std::fstream(file, std::ios::binary | std::ios::in);
         input.seekg(0x12); // Skok do 18 bitu
-        input.read(reinterpret_cast<char*>(buffer.data()),8);
+        input.read(&buffer[0],8);
         //Width
         auto width = int((int(buffer[0]) << 0)
                        | (int(buffer[1]) << 8)
@@ -45,16 +44,6 @@ namespace BMP{
         return SizeOfImage{width, height};
     }
 
-    // BMP - number of bits per pixel
-    auto getNumBPP(std::filesystem::path const& file) -> int{
-        auto buffer = std::vector<std::byte>(2);
-        auto input = std::ifstream(file, std::ios_base::binary);
-        input.seekg(0x1C);
-        input.read(reinterpret_cast<char*>(buffer.data()),2);
-        auto num = (int(buffer[0]) << 0) | (int(buffer[1]) << 8);
-        return num;
-    }
-
     auto getNumOfPadding(SizeOfImage const& soi) -> int{
         return soi.width % 4;
     }
@@ -64,8 +53,8 @@ auto sizeOfImageHelper(std::filesystem::path const& file) -> SizeOfImage{
     if(file.extension() == ".bmp") {
         return BMP::getSizeOfImage(file);
     }
-    else if (file.extension() == ".png") {
-        return PNG::getSizeOfImage(file);
+    else if (file.extension() == ".ppm") {
+        return PPM::getSizeOfImage(file);
     }
     return SizeOfImage{0,0};
 };

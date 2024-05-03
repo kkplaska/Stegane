@@ -23,15 +23,15 @@ auto main(const int argc, const char* argv[]) -> int {
     else {
         auto flags = std::map<std::string, Flag>{
                 {"-i",Flag::INFO},
-                {"-info",Flag::INFO},
+                {"--info",Flag::INFO},
                 {"-e",Flag::ENCRYPT},
-                {"-encrypt",Flag::ENCRYPT},
+                {"--encrypt",Flag::ENCRYPT},
                 {"-d",Flag::DECRYPT},
-                {"-decrypt",Flag::DECRYPT},
+                {"--decrypt",Flag::DECRYPT},
                 {"-c",Flag::CHECK},
-                {"-check",Flag::CHECK},
+                {"--check",Flag::CHECK},
                 {"-h",Flag::HELP},
-                {"-help",Flag::HELP}
+                {"--help",Flag::HELP}
         };
         // Sprawdza, czy flaga znajduje się w mapie.
         // Jeżeli nie, dodaje ją i traktuje jako niepoprawną
@@ -63,8 +63,8 @@ auto main(const int argc, const char* argv[]) -> int {
             fmt::println("The file is corrupted!");
             return 4;
         }
-        if(file.extension() != ".bmp" && file.extension() != ".png"){
-            fmt::println("{} is wrong format of the file! \n Try using a program with .bmp or .png file", file.extension().string());
+        if(file.extension() != ".bmp" && file.extension() != ".ppm"){
+            fmt::println("{} is wrong format of the file! \n Try using a program with .bmp or .ppm file", file.extension().string());
             return 5;
         }
         // Sprawdzenie uprawnień do odczytu

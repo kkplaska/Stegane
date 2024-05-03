@@ -11,7 +11,7 @@ struct SizeOfImage {
 
 auto f_info(std::filesystem::path const& file) -> int;
 
-auto f_encrypt(std::filesystem::path const& file, std::string const& message) -> int;
+auto f_encrypt(std::filesystem::path const& file, std::string message) -> int;
 
 auto f_decrypt(std::filesystem::path const& file) -> int;
 
@@ -21,11 +21,10 @@ auto f_help() -> int;
 
 namespace BMP {
     auto getSizeOfImage(std::filesystem::path const& file) -> SizeOfImage;
-    auto getNumBPP(std::filesystem::path const& file) -> int;
     auto getNumOfPadding(SizeOfImage const& soi) -> int;
 }
 
-namespace PNG {
+namespace PPM {
     auto getSizeOfImage(std::filesystem::path const& file) -> SizeOfImage;
 }
 
