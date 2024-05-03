@@ -95,14 +95,21 @@ auto f_encrypt(std::filesystem::path const& file, std::string message) -> int{
             }
             output.write(&buffer[0],buffer.size());
 
-            while(input.read(&buffer[0],buffer.size())){
-                output.write(&buffer[0],input.gcount());
-            }
-
             if(buffer.size() != input.gcount()){
                 auto tmp = std::vector<char>(buffer.begin(), buffer.begin() + input.gcount());
                 buffer = tmp;
                 output.write(&buffer[0],input.gcount());
+            }
+            else {
+                while(input.read(&buffer[0],buffer.size())){
+                    output.write(&buffer[0],input.gcount());
+                }
+
+                if(buffer.size() != input.gcount()){
+                    auto tmp = std::vector<char>(buffer.begin(), buffer.begin() + input.gcount());
+                    buffer = tmp;
+                    output.write(&buffer[0],input.gcount());
+                }
             }
 
         }
