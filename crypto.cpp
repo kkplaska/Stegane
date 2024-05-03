@@ -4,6 +4,10 @@
 
 auto f_encrypt(std::filesystem::path const& file, std::string message) -> int {
     auto sizeOfImage = sizeOfImageHelper(file);
+    if(message.size() > (sizeOfImage.width * sizeOfImage.height * 3 / 8) - 4){
+        fmt::println("A message can not be encrypt in file {}!", file.filename().string());
+        return 8;
+    }
 
     auto outputFile = std::filesystem::path(file.parent_path());
     outputFile /= "temp";
@@ -216,7 +220,7 @@ auto f_decrypt(std::filesystem::path const& file) -> int{
         };
         nextBuffer();
 
-        while(messageBufferIndex < (sizeOfMessage + sizeOfImage.height * nop) + 1){
+        while(messageBufferIndex < sizeOfMessage){
             input.read(&buffer[0], bufferSize);
             readBufferIndex = int(0);
             bufferANDHelper();
@@ -227,6 +231,10 @@ auto f_decrypt(std::filesystem::path const& file) -> int{
 
         for(auto& character : messageBuffer){
             character ^= 53;
+        }
+
+        for (auto x : messageBuffer) {
+            fmt::print("{0:X} ", x);
         }
 
         auto message = std::string(messageBuffer.begin(),messageBuffer.end());
@@ -240,8 +248,8 @@ auto f_check(std::filesystem::path const& file, std::string const& message) -> i
     auto sizeOfImage = sizeOfImageHelper(file);
     auto numberOfBytes = sizeOfImage.width * sizeOfImage.height / 8;
     numberOfBytes *= 3;
-    // 8 pierwszych bajtów zajętych przez długość wiadomości
-    numberOfBytes -= 8;
+    // 4 pierwszych bajtów zajętych przez długość wiadomości
+    numberOfBytes -= 4;
     if(numberOfChar <= numberOfBytes){
         fmt::println("A message can be encrypt in file {}!", file.filename().string());
         return 0;
