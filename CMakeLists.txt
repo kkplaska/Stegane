@@ -27,6 +27,7 @@ add_executable(Project_Steganography
         crypto.cpp
         info.cpp
         other.cpp
+        decrypto.cpp
 )
 
 target_link_libraries(Project_Steganography fmt sfml-graphics)

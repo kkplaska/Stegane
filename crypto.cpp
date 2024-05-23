@@ -1,48 +1,23 @@
-#include "fmt/core.h"
 #include "functions.hpp"
+#include "fmt/ranges.h"
 
-auto f_encrypt(std::filesystem::path const& file, std::string message) -> int {
-    auto sizeOfImage = sizeOfImageHelper(file);
-    if(message.size() > (sizeOfImage.width * sizeOfImage.height * 3 / 8) - 4){
-        fmt::println("A message can not be encrypt in file {}!", file.filename().string());
-        return 8;
-    }
+namespace BMP {
+    auto encrypt(std::filesystem::path const& file,
+                 SizeOfImage const& sizeOfImage,
+                 std::string const& message
+    ) -> int {
+        auto outputFile = std::filesystem::path(file.parent_path());
+        outputFile /= "temp";
+        outputFile += file.extension();
+        auto output = std::fstream(outputFile, std::ios::binary | std::ios::out | std::ios::trunc);
 
-    auto outputFile = std::filesystem::path(file.parent_path());
-    outputFile /= "temp";
-    outputFile += file.extension();
-    auto output = std::fstream(outputFile, std::ios::binary | std::ios::out | std::ios::trunc);
+        // DEBUG
+        fmt::println("{}", outputFile.string());
 
-    fmt::println("{}", outputFile.string());
-
-    auto input = std::fstream(file, std::ios::binary | std::ios::in);
-    auto buffer = std::vector<char>(512);
-
-    //Pierwsze 4 bajty -> długość wiadomości
-    auto sizeOfMessage = int(message.size());
-    // 4, bo 4 Bajty
-    for (int i = 0; i < 4; ++i) {
-        message.insert(i, 1, char(53 + ((sizeOfMessage >> (32 - 8 * (i + 1))) & 255)));
-    }
+        auto input = std::fstream(file, std::ios::binary | std::ios::in);
 
 
-    //XOR-owanie wiadomości
-    for (auto& character : message) {
-        character ^= 53;
-    }
-
-//    {
-//        for (auto c : message) {
-//            fmt::print("{} ", int(c));
-//        }
-//        fmt::println("");
-//        for (auto c : message) {
-//            fmt::print("{0:b} ", int(c));
-//        }
-//        fmt::println("");
-//    }
-
-    if(file.extension() == ".bmp"){
+        auto buffer = std::vector<char>(512);
         char startPosition;
         input.seekg(0xA);
         input.read(&startPosition,1);
@@ -111,141 +86,131 @@ auto f_encrypt(std::filesystem::path const& file, std::string message) -> int {
                     output.write(&buffer[0],input.gcount());
                 }
             }
+        }
+        return 0;
+    }
+}
 
+namespace sfmlImg {
+    auto encrypt(std::filesystem::path const& file,
+                  SizeOfImage const& sizeOfImage,
+                  std::string const& message
+    ) -> int {
+        auto bitMessage = std::vector<char>();
+        for (auto character: message) {
+            for (int i = 0; i < 8; ++i) {
+                // 0x80 == 0b1000_0000
+                if((character & 0x80) == 0x80){
+                    bitMessage.push_back(1);
+                } else {
+                    bitMessage.push_back(0);
+                }
+                character <<= 1;
+            }
         }
 
+        auto setColor = [](uint8_t& color, char& bit) -> void {
+            // 0x80 == 0b1000_0000
+            if(bit == 1){
+                color |= 1;
+            } else {
+                //0xFE == 0b1111_1110
+                color &= 0xFFFE;
+            }
+        };
 
+        auto imgFile = sf::Image();
+        imgFile.loadFromFile(file.string());
+        auto x = int(0);
+        auto y = int(0);
+        for (int i = 0; i < bitMessage.size(); ) {
+            auto pixel = imgFile.getPixel(x, y);
+            if(i + 1 > bitMessage.size()) break;
+            setColor(pixel.r, bitMessage.at(i));
+
+            if(i + 2 > bitMessage.size()) break;
+            setColor(pixel.g, bitMessage.at(i + 1));
+
+            if(i + 3 > bitMessage.size()) break;
+            setColor(pixel.b, bitMessage.at(i + 2));
+            ++x;
+            if(x == sizeOfImage.width + 1){
+                x = 0;
+                ++y;
+            }
+            i += 3;
+        }
+
+        auto str = std::string("..\\testVectors\\temp" + file.extension().string());
+        fmt::println("{}", str);
+        imgFile.saveToFile(str);
+
+        return 0;
     }
-    else if(file.extension() == ".ppm") {
+}
 
+auto prepareMessage(std::string& message) -> void {
+
+    //Pierwsze 4 bajty -> długość wiadomości
+    auto sizeOfMessage = int(message.size());
+    auto firstNumber = char(53);
+
+    // 4, bo 4 Bajty
+    for (int i = 0; i < 4; ++i) {
+        message.insert(i, 1, char(firstNumber + ((sizeOfMessage >> (32 - 8 * (i + 1))) & 255)));
     }
 
-    // */
+    //XOR-owanie wiadomości
+    for (auto& character : message) {
+        character ^= firstNumber;
+    }
+
+}
+
+auto f_encrypt(std::filesystem::path const& file, std::string message) -> int {
+    auto extension = getFileFormat(file);
+    auto sizeOfImage = sizeOfImageHelper(file);
+    if(message.size() > getMaxMessageSize(sizeOfImage)){
+        fmt::println("A message can not be encrypt in file {}!", file.filename().string());
+        return 8;
+    }
+
+    prepareMessage(message);
+
+    // DEBUG
+//    {
+//        for (auto c : message) {
+//            fmt::print("{} ", int(c));
+//        }
+//        fmt::println("");
+//        for (auto c : message) {
+//            fmt::print("{0:b} ", int(c));
+//        }
+//        fmt::println("");
+//    }
+
+    auto returnCode = int(0);
+    switch(extension){
+        case FileFormat::BMP:
+            returnCode = BMP::encrypt(file, sizeOfImage, message);
+            break;
+        case FileFormat::PNG:
+        case FileFormat::SFML_Format:
+            returnCode = sfmlImg::encrypt(file, sizeOfImage, message);
+            break;
+    }
+
+    fmt::println("ENCRYPT!");
+    return returnCode;
 
     //Usunięcie pierwotnego pliku
     //Zmiana nazwy temp na pierwotną
-    {
-
-    }
-
-
-
-    fmt::println("ENCRYPT!");
-    return 12;
-}
-
-auto f_decrypt(std::filesystem::path const& file) -> int{
-    auto sizeOfImage = sizeOfImageHelper(file);
-    auto input = std::fstream(file, std::ios::binary | std::ios::in);
-    auto bufferSize = int(512);
-    auto buffer = std::vector<char>(bufferSize);
-
-    if(file.extension() == ".bmp"){
-        char startPosition;
-        input.seekg(0xA);
-        input.read(&startPosition,1);
-        input.seekg(startPosition);
-
-        auto sizeOfMessage = int();
-        auto lineIndex = int(0);
-        // Number Of Paddings
-        auto nop = sizeOfImage.width % 4;
-
-        // Pierwszy bufor 512B
-        auto readBufferIndex = int(0);
-        input.read(&buffer[0], bufferSize);
-
-        auto paddingHelper = [&]() mutable -> void {
-            if(lineIndex == sizeOfImage.width){
-                lineIndex = 0;
-                for (int j = 0; j < nop; ++j) {
-                    readBufferIndex++;
-                }
-            }
-        };
-
-        auto bufferANDHelper = [&]() mutable -> void {
-            for (int i = 0; i < input.gcount(); ++i) {
-                buffer.at(i) &= 1;
-            }
-        };
-
-        bufferANDHelper();
-
-        // Pierwsze 4 Bajty
-        {
-            // som <> SizeOfMessage
-            auto somBuffer = std::vector<char>(4);
-            for(char& somElement : somBuffer) {
-                for (int j = 0; j < 8; ++j, ++readBufferIndex) {
-                    somElement <<= 1;
-                    somElement |= buffer.at(readBufferIndex);
-                }
-                somElement ^= 53;
-                somElement -= 53;
-                sizeOfMessage <<= 8;
-                sizeOfMessage += somElement;
-                lineIndex++;
-
-                // Pilnowanie paddingów
-                paddingHelper();
-            }
-        }
-
-        auto messageBuffer = std::vector<char>(sizeOfMessage);
-        auto messageBufferIndex = int(0);
-        auto byteVisor = int(0);
-
-        // Kontynuacja do 512 B lub końca, jeśli jest mniejszy
-        auto nextBuffer = [&]() mutable -> bool {
-            for ( ; readBufferIndex < input.gcount(); ++readBufferIndex){
-                messageBuffer.at(messageBufferIndex) <<= 1;
-                messageBuffer.at(messageBufferIndex) |= buffer.at(readBufferIndex);
-
-                byteVisor++;
-                if(byteVisor % 8 == 0){
-                    byteVisor = 0;
-                    messageBufferIndex++;
-                }
-
-                if(messageBufferIndex == sizeOfMessage){
-                    return true;
-                }
-
-                // Pilnowanie paddingów
-                paddingHelper();
-            }
-            return false;
-        };
-        nextBuffer();
-
-        while(messageBufferIndex < sizeOfMessage){
-            input.read(&buffer[0], bufferSize);
-            readBufferIndex = int(0);
-            bufferANDHelper();
-            if(nextBuffer()){
-                break;
-            }
-        }
-
-        for(auto& character : messageBuffer){
-            character ^= 53;
-        }
-
-        auto message = std::string(messageBuffer.begin(),messageBuffer.end());
-        fmt::println("{}",message);
-    }
-    return 15;
 }
 
 auto f_check(std::filesystem::path const& file, std::string const& message) -> int{
     auto numberOfChar = message.size();
     auto sizeOfImage = sizeOfImageHelper(file);
-    auto numberOfBytes = sizeOfImage.width * sizeOfImage.height / 8;
-    numberOfBytes *= 3;
-    // 4 pierwszych bajtów zajętych przez długość wiadomości
-    numberOfBytes -= 4;
-    if(numberOfChar <= numberOfBytes){
+    if(numberOfChar <= getMaxMessageSize(sizeOfImage)){
         fmt::println("A message can be encrypt in file {}!", file.filename().string());
         return 0;
     }

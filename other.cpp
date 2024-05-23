@@ -1,6 +1,24 @@
 #include <fstream>
 #include "functions.hpp"
 
+auto getFileFormat(std::filesystem::path const& file) -> FileFormat{
+    auto ext = file.extension().string();
+    if(ext == ".png"){
+        return FileFormat::PNG;
+    } else if(ext == ".bmp"){
+        return FileFormat::BMP;
+    } else {
+        return FileFormat::SFML_Format;
+    }
+}
+auto getMaxMessageSize(SizeOfImage const& sizeOfImage) -> int {
+    auto numberOfBytes = sizeOfImage.width * sizeOfImage.height / 8;
+    numberOfBytes *= 3;
+    // 4 pierwszych bajtów zajętych przez długość wiadomości
+    numberOfBytes -= 4;
+    return numberOfBytes;
+}
+
 namespace PNG {
     auto getSizeOfImage(std::filesystem::path const& file) -> SizeOfImage{
         auto size = std::vector<int>(2);

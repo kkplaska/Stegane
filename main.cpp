@@ -57,8 +57,8 @@ auto main(const int argc, const char* argv[]) -> int {
             fmt::println("The file is corrupted!");
             return 4;
         }
-        if (file.extension() != ".bmp" && file.extension() != ".ppm") {
-            fmt::println("{} is wrong format of the file! \n Try using a program with .bmp or .ppm file",
+        if (file.extension() != ".bmp" && file.extension() != ".png") {
+            fmt::println("{} is wrong format of the file! \n Try using a program with .bmp or .png file",
                          file.extension().string());
             return 5;
         }

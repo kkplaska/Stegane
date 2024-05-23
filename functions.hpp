@@ -5,11 +5,16 @@
 #include <vector>
 #include "fmt/core.h"
 #include "SFML/Graphics/Image.hpp"
+#include <SFML/Graphics/Color.hpp>
 
 struct SizeOfImage {
     const int width;
     const int height;
     public: SizeOfImage(int const& w, int const& h) : width(w), height(h) { };
+};
+
+enum class FileFormat {
+    BMP, PNG, SFML_Format
 };
 
 auto f_info(std::filesystem::path const& file) -> int;
@@ -31,4 +36,10 @@ namespace PNG {
     auto getSizeOfImage(std::filesystem::path const& file) -> SizeOfImage;
 }
 
+namespace sfmlImg {
+    auto getSizeOfImage(std::filesystem::path const& file) -> SizeOfImage;
+}
+
+auto getMaxMessageSize(SizeOfImage const& sizeOfImage) -> int;
+auto getFileFormat(std::filesystem::path const& file) -> FileFormat;
 auto sizeOfImageHelper(std::filesystem::path const& file) -> SizeOfImage;
