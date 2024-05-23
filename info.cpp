@@ -1,7 +1,7 @@
 #include <fstream>
-#include <chrono>
 #include "functions.hpp"
 #include "fmt/core.h"
+#include "fmt/chrono.h"
 auto f_info(std::filesystem::path const& file) -> int{
     fmt::println("Information about file: {}", file.filename().string());
     // File extension
@@ -9,7 +9,13 @@ auto f_info(std::filesystem::path const& file) -> int{
     auto sizeOfImage = sizeOfImageHelper(file);
     auto sizeOfFile = std::filesystem::file_size(file);
     // %F = "%Y-%m-%d" | %T = %H:%M:%S
-    auto lastWriteTime = std::format("{:%F %T}",std::filesystem::last_write_time(file));
+    auto lastWriteTime = fmt::format("{:%F %T}",
+         std::chrono::time_point_cast<std::chrono::seconds>( // Zaokrąglenie do sekund
+         std::chrono::file_clock::to_sys(
+             std::filesystem::last_write_time(file))));
+    // Formatowanie fmt - https://fmt.dev/latest/syntax.html#chrono-specs
+    // Alternatywa dla niedziałającego na uczelni std::format - https://stackoverflow.com/questions/61030383/how-to-convert-stdfilesystemfile-time-type-to-time-t
+    // Zaokrąglenie do sekund - https://stackoverflow.com/questions/76106361/stdformating-stdchrono-seconds-without-fractional-digits
 
     fmt::println("- file extension: {}", fExt);
     fmt::println("- size of image (in px): {} x {}", sizeOfImage.width, sizeOfImage.height);

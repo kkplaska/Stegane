@@ -1,4 +1,3 @@
-#include <fstream>
 #include "fmt/core.h"
 #include "functions.hpp"
 
@@ -27,7 +26,7 @@ auto f_encrypt(std::filesystem::path const& file, std::string message) -> int {
     }
 
 
-    //XORowanie wiadomości
+    //XOR-owanie wiadomości
     for (auto& character : message) {
         character ^= 53;
     }
@@ -226,7 +225,7 @@ auto f_decrypt(std::filesystem::path const& file) -> int{
             bufferANDHelper();
             if(nextBuffer()){
                 break;
-            };
+            }
         }
 
         for(auto& character : messageBuffer){

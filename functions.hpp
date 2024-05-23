@@ -1,7 +1,10 @@
 #pragma once
+#include <fstream>
 #include <string>
 #include <filesystem>
 #include <vector>
+#include "fmt/core.h"
+#include "SFML/Graphics/Image.hpp"
 
 struct SizeOfImage {
     const int width;
@@ -24,7 +27,7 @@ namespace BMP {
     auto getNumOfPadding(SizeOfImage const& soi) -> int;
 }
 
-namespace PPM {
+namespace PNG {
     auto getSizeOfImage(std::filesystem::path const& file) -> SizeOfImage;
 }
 

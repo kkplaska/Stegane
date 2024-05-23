@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.25)
 project(Project_Steganography)
 
 set(CMAKE_CXX_STANDARD 20)
+set(BUILD_SHARED_LIBS FALSE)
 
 include(FetchContent)
 
@@ -11,7 +12,14 @@ FetchContent_Declare(
         GIT_TAG         10.2.1
 )
 
+FetchContent_Declare(
+        SFML
+        GIT_REPOSITORY  https://github.com/SFML/SFML
+        GIT_TAG         2.6.1
+)
+
 FetchContent_MakeAvailable(fmt)
+FetchContent_MakeAvailable(SFML)
 
 add_executable(Project_Steganography
         main.cpp
@@ -21,4 +29,4 @@ add_executable(Project_Steganography
         other.cpp
 )
 
-target_link_libraries(Project_Steganography fmt)
+target_link_libraries(Project_Steganography fmt sfml-graphics)
