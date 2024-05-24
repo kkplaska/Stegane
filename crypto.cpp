@@ -123,18 +123,22 @@ namespace sfmlImg {
         imgFile.loadFromFile(file.string());
         auto x = int(0);
         auto y = int(0);
+
         for (int i = 0; i < bitMessage.size(); ) {
+
             auto pixel = imgFile.getPixel(x, y);
-            if(i + 1 > bitMessage.size()) break;
+
+            if(i == bitMessage.size()) break;
             setColor(pixel.r, bitMessage.at(i));
 
-            if(i + 2 > bitMessage.size()) break;
+            if(i + 1 == bitMessage.size()) break;
             setColor(pixel.g, bitMessage.at(i + 1));
 
-            if(i + 3 > bitMessage.size()) break;
+            if(i + 2 == bitMessage.size()) break;
             setColor(pixel.b, bitMessage.at(i + 2));
+            imgFile.setPixel(x, y, pixel);
             ++x;
-            if(x == sizeOfImage.width + 1){
+            if(x == sizeOfImage.width){
                 x = 0;
                 ++y;
             }
@@ -142,7 +146,6 @@ namespace sfmlImg {
         }
 
         auto str = std::string("..\\testVectors\\temp" + file.extension().string());
-        fmt::println("{}", str);
         imgFile.saveToFile(str);
 
         return 0;
@@ -151,6 +154,7 @@ namespace sfmlImg {
 
 auto prepareMessage(std::string& message) -> void {
 
+    
     //Pierwsze 4 bajty -> długość wiadomości
     auto sizeOfMessage = int(message.size());
     auto firstNumber = char(53);
