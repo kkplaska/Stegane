@@ -46,9 +46,4 @@ auto getMaxMessageSize(SizeOfImage const& sizeOfImage) -> int;
 auto getFileFormat(std::filesystem::path const& file) -> FileFormat;
 auto sizeOfImageHelper(std::filesystem::path const& file) -> SizeOfImage;
 auto checkMessageSize(int size, SizeOfImage const& sizeOfImage) -> void;
-
-template <typename T>
-requires (std::same_as<T, int>)
-auto xorContainer (T& container, int n) -> void;
-
 auto tempFile (std::filesystem::path const& inputFile) -> std::filesystem::path;
