@@ -48,11 +48,7 @@ auto sizeOfImageHelper(std::filesystem::path const& file) -> SizeOfImage;
 auto checkMessageSize(int size, SizeOfImage const& sizeOfImage) -> void;
 
 template <typename T>
-requires (not std::same_as<T, int>)
-auto xorContent (T& item, int n) -> void;
-
-template <typename T>
 requires (std::same_as<T, int>)
-auto xorContent (T& container, int n) -> void;
+auto xorContainer (T& container, int n) -> void;
 
 auto tempFile (std::filesystem::path const& inputFile) -> std::filesystem::path;

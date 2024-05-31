@@ -1,7 +1,7 @@
 #include "functions.hpp"
 
 namespace BMP {
-    auto decrypt(std::filesystem::path const& file, SizeOfImage const& sizeOfImage) -> void {
+    auto decrypt(std::filesystem::path const& file, SizeOfImage const& sizeOfImage) -> std::string {
         auto input = std::fstream(file, std::ios::binary | std::ios::in);
         auto bufferSize = int(512);
         auto buffer = std::vector<char>(bufferSize);
@@ -94,15 +94,15 @@ namespace BMP {
             }
         }
 
-        xorContent(messageBuffer, 53);
+        for (auto& character: messageBuffer) character ^= 53;
 
-        auto message = std::string(messageBuffer.begin(),messageBuffer.end());
-        fmt::println("{}",message);
+        // https://stackoverflow.com/questions/5115166/how-to-construct-a-stdstring-from-a-stdvectorchar
+        return {messageBuffer.data(), messageBuffer.size()};
     }
 }
 
 namespace sfmlImg {
-    auto decrypt(std::filesystem::path const& file, SizeOfImage const& sizeOfImage) -> int {
+    auto decrypt(std::filesystem::path const& file, SizeOfImage const& sizeOfImage) -> std::string {
         auto imgFile = sf::Image();
         imgFile.loadFromFile(file.string());
         auto x = int(0);
@@ -156,22 +156,22 @@ namespace sfmlImg {
            getByte(charElement);
         }
 
-        auto message = std::string(charMessageVictor.begin(), charMessageVictor.end());
-        fmt::println("{}", message);
-
-        return 0;
+        // https://stackoverflow.com/questions/5115166/how-to-construct-a-stdstring-from-a-stdvectorchar
+        return {charMessageVictor.data(), charMessageVictor.size()};
     }
 }
 
 auto f_decrypt(std::filesystem::path const& file) -> void {
     auto extension = getFileFormat(file);
     auto sizeOfImage = sizeOfImageHelper(file);
+    auto message = std::string("The content of the decrypted message:\n");
     switch(extension){
         case FileFormat::BMP:
-            BMP::decrypt(file, sizeOfImage);
+            message += BMP::decrypt(file, sizeOfImage);
             break;
         case FileFormat::SFML_Format:
-            sfmlImg::decrypt(file, sizeOfImage);
+            message += sfmlImg::decrypt(file, sizeOfImage);
             break;
     }
+    fmt::println("{}", message);
 }

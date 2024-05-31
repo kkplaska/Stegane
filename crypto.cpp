@@ -138,7 +138,7 @@ auto prepareMessage(std::string& message) -> void {
         message.insert(i, 1, char(firstNumber + ((sizeOfMessage >> (32 - 8 * (i + 1))) & 255)));
     }
     //XOR-owanie wiadomości
-    xorContent(message, firstNumber);
+    for (auto& character: message) character ^= 53;
 }
 
 auto f_encrypt(std::filesystem::path const& file, std::string message) -> void {

@@ -39,8 +39,12 @@ auto main(const int argc, const char* argv[]) -> int {
     // Lambdy
     auto checkNumOfArguments = [&argc](int n) -> void {
         ++n;
-        if (argc != n) {
-            throw std::logic_error("The program has been launched with bad number of arguments!");
+        if (argc == n){
+            return;
+        } else if (argc < n) {
+            throw std::logic_error("The program has been launched with too few arguments!");
+        } else {
+            throw std::logic_error("The program has been launched with too many arguments!");
         }
     };
     auto checkFile = [&argv]() -> void {
@@ -51,7 +55,10 @@ auto main(const int argc, const char* argv[]) -> int {
         if (!std::filesystem::is_regular_file(file)) {
             throw std::logic_error(fmt::format("The file {} is corrupted!", file.filename().string()));
         }
-        if (file.extension() != ".bmp" && file.extension() != ".png") {
+        if (file.extension() != ".bmp"
+        && file.extension() != ".png"
+        && file.extension() != ".tga"
+        ) {
             throw std::logic_error(fmt::format("{} is wrong format of the file! \n Try using a program with .bmp or .png file", file.extension().string()));
         }
         // Sprawdzenie uprawnień do odczytu

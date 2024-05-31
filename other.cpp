@@ -16,18 +16,6 @@ auto getMaxMessageSize(SizeOfImage const& sizeOfImage) -> int {
     return numberOfBytes;
 }
 
-template <typename T>
-requires (not std::same_as<T, int>)
-auto xorContent (T& item, int n) -> void {
-    item ^= n;
-}
-
-template <typename T>
-requires (std::same_as<T, int>)
-auto xorContent (T& container, int n) -> void {
-    for (auto &item: container) item ^= n;
-}
-
 namespace PNG {
     auto getSizeOfImage(std::filesystem::path const& file) -> SizeOfImage{
         auto size = std::vector<int>(2);
