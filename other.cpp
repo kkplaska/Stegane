@@ -1,11 +1,8 @@
-#include <fstream>
 #include "functions.hpp"
 
 auto getFileFormat(std::filesystem::path const& file) -> FileFormat{
     auto ext = file.extension().string();
-    if(ext == ".png"){
-        return FileFormat::PNG;
-    } else if(ext == ".bmp"){
+    if(ext == ".bmp"){
         return FileFormat::BMP;
     } else {
         return FileFormat::SFML_Format;
@@ -14,9 +11,21 @@ auto getFileFormat(std::filesystem::path const& file) -> FileFormat{
 auto getMaxMessageSize(SizeOfImage const& sizeOfImage) -> int {
     auto numberOfBytes = sizeOfImage.width * sizeOfImage.height / 8;
     numberOfBytes *= 3;
-    // 4 pierwszych bajtów zajętych przez długość wiadomości
+    // 4 pierwsze bajty zajęte przez długość wiadomości
     numberOfBytes -= 4;
     return numberOfBytes;
+}
+
+template <typename T>
+requires (not std::same_as<T, int>)
+auto xorContent (T& item, int n) -> void {
+    item ^= n;
+}
+
+template <typename T>
+requires (std::same_as<T, int>)
+auto xorContent (T& container, int n) -> void {
+    for (auto &item: container) item ^= n;
 }
 
 namespace PNG {
@@ -84,8 +93,17 @@ auto sizeOfImageHelper(std::filesystem::path const& file) -> SizeOfImage{
     else if (file.extension() == ".png") {
         return PNG::getSizeOfImage(file);
     }
-    else if (file.extension() == ".ppm") {
+    else {
         return sfmlImg::getSizeOfImage(file);
     }
-    return SizeOfImage{0,0};
+}
+auto checkMessageSize(int size, SizeOfImage const& sizeOfImage) -> void{
+    if(size > getMaxMessageSize(sizeOfImage)) throw std::logic_error("The file has got corrupted message or the file has not got a message!");
+}
+
+auto tempFile (std::filesystem::path const& inputFile) -> std::filesystem::path {
+    auto outputFile = std::filesystem::path(inputFile.parent_path());
+    outputFile /= "temp";
+    outputFile += inputFile.extension();
+    return outputFile;
 }

@@ -3,6 +3,8 @@
 #include <string>
 #include <filesystem>
 #include <vector>
+#include <exception>
+#include <stdexcept>
 #include "fmt/core.h"
 #include "SFML/Graphics/Image.hpp"
 #include <SFML/Graphics/Color.hpp>
@@ -14,18 +16,18 @@ struct SizeOfImage {
 };
 
 enum class FileFormat {
-    BMP, PNG, SFML_Format
+    BMP, SFML_Format
 };
 
-auto f_info(std::filesystem::path const& file) -> int;
+auto f_info(std::filesystem::path const& file) -> void;
 
-auto f_encrypt(std::filesystem::path const& file, std::string message) -> int;
+auto f_encrypt(std::filesystem::path const& file, std::string message) -> void;
 
-auto f_decrypt(std::filesystem::path const& file) -> int;
+auto f_decrypt(std::filesystem::path const& file) -> void;
 
-auto f_check(std::filesystem::path const& file, std::string const& message) -> int;
+auto f_check(std::filesystem::path const& file, std::string const& message) -> void;
 
-auto f_help() -> int;
+auto f_help() -> void;
 
 namespace BMP {
     auto getSizeOfImage(std::filesystem::path const& file) -> SizeOfImage;
@@ -43,3 +45,14 @@ namespace sfmlImg {
 auto getMaxMessageSize(SizeOfImage const& sizeOfImage) -> int;
 auto getFileFormat(std::filesystem::path const& file) -> FileFormat;
 auto sizeOfImageHelper(std::filesystem::path const& file) -> SizeOfImage;
+auto checkMessageSize(int size, SizeOfImage const& sizeOfImage) -> void;
+
+template <typename T>
+requires (not std::same_as<T, int>)
+auto xorContent (T& item, int n) -> void;
+
+template <typename T>
+requires (std::same_as<T, int>)
+auto xorContent (T& container, int n) -> void;
+
+auto tempFile (std::filesystem::path const& inputFile) -> std::filesystem::path;

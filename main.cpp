@@ -4,11 +4,9 @@
 auto main(const int argc, const char* argv[]) -> int {
     // Sprawdzenie, czy nie ma więcej niż trzy argumenty
     // [flaga, ścieżka do pliku, wiadomość]
-    {
-        if (argc > 4) {
-            fmt::println("The program has been launched with too many arguments!");
-            return 1;
-        }
+    if (argc > 4) {
+        fmt::println("The program has been launched with too many arguments!");
+        return 2;
     }
 
     enum class Flag {
@@ -39,93 +37,86 @@ auto main(const int argc, const char* argv[]) -> int {
     }
 
     // Lambdy
-    auto checkNumOfArguments = [argc](int n) -> int {
+    auto checkNumOfArguments = [&argc](int n) -> void {
         ++n;
         if (argc != n) {
-            fmt::println("The program has been launched with bad number of arguments!");
-            return 2;
+            throw std::logic_error("The program has been launched with bad number of arguments!");
         }
-        return 0;
     };
-    auto checkFile = [argv]() -> int {
+    auto checkFile = [&argv]() -> void {
         auto file = std::filesystem::path(argv[2]);
         if (!std::filesystem::exists(file)) {
-            fmt::println("The path is wrong, or the file doesn't exist!");
-            return 3;
+            throw std::logic_error("Stated path is wrong, or the file doesn't exist!");
         }
         if (!std::filesystem::is_regular_file(file)) {
-            fmt::println("The file is corrupted!");
-            return 4;
+            throw std::logic_error(fmt::format("The file {} is corrupted!", file.filename().string()));
         }
         if (file.extension() != ".bmp" && file.extension() != ".png") {
-            fmt::println("{} is wrong format of the file! \n Try using a program with .bmp or .png file",
-                         file.extension().string());
-            return 5;
+            throw std::logic_error(fmt::format("{} is wrong format of the file! \n Try using a program with .bmp or .png file", file.extension().string()));
         }
         // Sprawdzenie uprawnień do odczytu
         auto fs = std::fstream(file);
         if (!fs.is_open()){
-            fmt::println("Access to the file {} is not allowed!", file.filename().string());
-            return 6;
+            throw std::logic_error(fmt::format("Access to the file {} is not allowed!", file.filename().string()));
         }
-        fs.close();
-
-        // Jeżeli wszystko w porządku zwracamy 0
-        return 0;
     };
 
-    int returnCode;
-    switch (choseFlag) {
+    try{switch (choseFlag) {
         case Flag::INCORRECT:
             break;
         case Flag::HELP:
-            returnCode = checkNumOfArguments(1);
-            if(returnCode == 0) break;
-            return returnCode;
+            checkNumOfArguments(1);
+            break;
+        case Flag::INFO:    // Sprawdzenie, czy są dokładnie dwa argumenty
+        case Flag::DECRYPT: // [flaga, ścieżka do pliku]
+            checkNumOfArguments(2);
+            break;
+        case Flag::ENCRYPT: // Sprawdzenie, czy są dokładnie trzy argumenty
+        case Flag::CHECK:   // [flaga, ścieżka do pliku, wiadomość]
+            checkNumOfArguments(3);
+            break;
+    }} catch (std::exception const& e){
+        fmt::println("{}", e.what());
+        return 2;
+    }
+    
+    try{switch (choseFlag) {
         case Flag::INFO:
         case Flag::DECRYPT:
-            // Sprawdzenie, czy są dokładnie dwa argumenty
-            // [flaga, ścieżka do pliku]
-            returnCode = checkNumOfArguments(2);
-            if(returnCode == 0){
-                returnCode = checkFile();
-                if(returnCode == 0) break;
-            }
-            return returnCode;
         case Flag::ENCRYPT:
         case Flag::CHECK:
-            // Sprawdzenie, czy są dokładnie trzy argumenty
-            // [flaga, ścieżka do pliku, wiadomość]
-            returnCode = checkNumOfArguments(3);
-            if(returnCode == 0){
-                returnCode = checkFile();
-                if(returnCode == 0) break;
-            }
-            return returnCode;
+            checkFile();
+        case Flag::INCORRECT:
+        case Flag::HELP:
+            break;
+    }} catch (std::exception const& e){
+        fmt::println("{}", e.what());
+        return 3;
     }
 
     // Wskazania dalszego działania programu w zgodzie z flagą
-    switch (choseFlag) {
+    try{switch (choseFlag) {
         case Flag::INCORRECT:
             fmt::println("The program has been launched with wrong flag! Try use -h to get help!");
-            returnCode = 7;
-            break;
+            return 4;
         case Flag::INFO:
-            returnCode = f_info(std::filesystem::path(argv[2]));
+            f_info(std::filesystem::path(argv[2]));
             break;
         case Flag::ENCRYPT:
-            returnCode = f_encrypt(std::filesystem::path(argv[2]),std::string(argv[3]));
+            f_encrypt(std::filesystem::path(argv[2]),std::string(argv[3]));
             break;
         case Flag::DECRYPT:
-            returnCode = f_decrypt(std::filesystem::path(argv[2]));
+            f_decrypt(std::filesystem::path(argv[2]));
             break;
         case Flag::CHECK:
-            returnCode = f_check(std::filesystem::path(argv[2]),std::string(argv[3]));
+            f_check(std::filesystem::path(argv[2]),std::string(argv[3]));
             break;
         case Flag::HELP:
-            returnCode = f_help();
+            f_help();
             break;
+    }} catch (std::exception const& e){
+        fmt::println("{}", e.what());
+        return 5;
     }
-
-    return returnCode;
+    return 0;
 }

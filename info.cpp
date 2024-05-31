@@ -2,11 +2,12 @@
 #include "functions.hpp"
 #include "fmt/core.h"
 #include "fmt/chrono.h"
-auto f_info(std::filesystem::path const& file) -> int{
+auto f_info(std::filesystem::path const& file) -> void {
     fmt::println("Information about file: {}", file.filename().string());
     // File extension
     auto fExt = file.extension().string();
     auto sizeOfImage = sizeOfImageHelper(file);
+    // https://en.cppreference.com/w/cpp/filesystem/file_size
     auto sizeOfFile = std::filesystem::file_size(file);
     // %F = "%Y-%m-%d" | %T = %H:%M:%S
     auto lastWriteTime = fmt::format("{:%F %T}",
@@ -21,11 +22,9 @@ auto f_info(std::filesystem::path const& file) -> int{
     fmt::println("- size of image (in px): {} x {}", sizeOfImage.width, sizeOfImage.height);
     fmt::println("- size of file: {} B", sizeOfFile);
     fmt::println("- last write time: {}", lastWriteTime);
-
-    return 0;
 }
 
-auto f_help() -> int{
+auto f_help() -> void {
     auto messageToPrint =
             std::string(
             "+----------------------------------+\n"
@@ -45,22 +44,21 @@ auto f_help() -> int{
             "\n"
             "Mandatory arguments to long options are mandatory for short options too.\n"
             "\n"
-            "-i, -info [FILEPATH]\n"
+            "-i, --info [FILEPATH]\n"
             "\tLorem ipsum dolor sit amet, consectetur adipiscing elit.\n"
             "\n"
-            "-e, -encrypt [FILEPATH] [MESSAGE]\n"
+            "-e, --encrypt [FILEPATH] [MESSAGE]\n"
             "\tLorem ipsum dolor sit amet, consectetur adipiscing elit.\n"
             "\n"
-            "-d, -decrypt [FILEPATH]\n"
+            "-d, --decrypt [FILEPATH]\n"
             "\tLorem ipsum dolor sit amet, consectetur adipiscing elit.\n"
             "\n"
-            "-c, -check [FILEPATH] [MESSAGE]\n"
+            "-c, --check [FILEPATH] [MESSAGE]\n"
             "\tLorem ipsum dolor sit amet, consectetur adipiscing elit.\n"
             "\n"
-            "-h, -help\n"
+            "-h, --help\n"
             "\tLorem ipsum dolor sit amet, consectetur adipiscing elit.\n"
             );
     fmt::println("{}",messageToPrint);
-    return 0;
 }
 
