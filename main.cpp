@@ -37,13 +37,13 @@ auto main(const int argc, const char* argv[]) -> int {
     }
 
     // Lambdy
-    auto checkNumOfArguments = [&argc](int n, bool too) -> void {
+    auto checkNumOfArguments = [&argc](int n, bool tooFew) -> void {
         ++n;
         if (argc == n){
             return;
         } else if (argc > n) {
             throw std::logic_error("The program has been launched with too many arguments!");
-        } else if (too){
+        } else if (tooFew){
             throw std::logic_error("The program has been launched with too few arguments!");
         }
     };
