@@ -33,7 +33,7 @@ auto f_help() -> void {
             "Project_Steganography.exe [FLAG] [FILEPATH] [MESSAGE]"
             "\n"
             "\n"
-            "DESCRIPTION:."
+            "DESCRIPTION:"
             "\n"
             "\tHide message in graphic file. Read hidden message from prepared graphic file."
             "\n"
