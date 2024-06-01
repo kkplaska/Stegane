@@ -58,7 +58,7 @@ auto main(const int argc, const char* argv[]) -> int {
         if (file.extension() != ".bmp"
         && file.extension() != ".png"
         && file.extension() != ".tga"
-        ) {
+        ){
             throw std::logic_error(fmt::format("{} is wrong format of the file! \n Try using a program with .bmp or .png file", file.extension().string()));
         }
         // Sprawdzenie uprawnień do odczytu

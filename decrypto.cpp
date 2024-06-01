@@ -3,10 +3,11 @@
 namespace BMP {
     auto decrypt(std::filesystem::path const& file, SizeOfImage const& sizeOfImage) -> std::string {
         auto input = std::fstream(file, std::ios::binary | std::ios::in);
-        auto bufferSize = int(512);
+        auto bufferSize = int(4096);
         auto buffer = std::vector<char>(bufferSize);
 
         char startPosition;
+        // https://en.cppreference.com/w/cpp/io/basic_istream/seekg
         input.seekg(0xA);
         input.read(&startPosition,1);
         input.seekg(startPosition);
@@ -30,6 +31,7 @@ namespace BMP {
             }
         };
         auto bufferANDHelper = [&]() mutable -> void {
+        // https://en.cppreference.com/w/cpp/io/basic_istream/gcount
             for (int i = 0; i < input.gcount(); ++i) {
                 buffer.at(i) &= 1;
             }
@@ -94,10 +96,12 @@ namespace BMP {
             }
         }
 
-        for (auto& character: messageBuffer) character ^= 53;
+        for (auto& character: messageBuffer){
+            character ^= 53;
+            character += 7;
+        }
 
-        // https://stackoverflow.com/questions/5115166/how-to-construct-a-stdstring-from-a-stdvectorchar
-        return {messageBuffer.data(), messageBuffer.size()};
+        return {messageBuffer.begin(), messageBuffer.end()};
     }
 }
 
@@ -152,12 +156,12 @@ namespace sfmlImg {
         }
         checkMessageSize(sizeOfMessage, sizeOfImage);
         auto charMessageVictor = std::vector<char>(sizeOfMessage);
-        for(char& charElement : charMessageVictor) {
-           getByte(charElement);
+        for(char& charElement : charMessageVictor){
+            getByte(charElement);
+            charElement += 7;
         }
 
-        // https://stackoverflow.com/questions/5115166/how-to-construct-a-stdstring-from-a-stdvectorchar
-        return {charMessageVictor.data(), charMessageVictor.size()};
+        return {charMessageVictor.begin(), charMessageVictor.end()};
     }
 }
 

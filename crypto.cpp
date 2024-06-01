@@ -9,10 +9,9 @@ auto encrypt(std::filesystem::path const& file,
     auto output = std::fstream(tempFile(file), std::ios::binary | std::ios::out | std::ios::trunc);
     auto input = std::fstream(file, std::ios::binary | std::ios::in);
 
-    auto buffer = std::vector<char>(512);
+    auto buffer = std::vector<char>(4096); // Rozmiar Bufora
     char startPosition;
-    // https://en.cppreference.com/w/cpp/io/basic_istream/seekg
-    input.seekg(0xA);
+    input.seekg(0xA); // https://en.cppreference.com/w/cpp/io/basic_istream/seekg
     input.read(&startPosition,1); //Odczytywanie pozycji końca nagłówka
     input.seekg(0);
 
@@ -24,7 +23,7 @@ auto encrypt(std::filesystem::path const& file,
     input.read(&buffer[0],static_cast<std::streamsize>(buffer.size()));
 
     // Dla plików mniejszych niż rozmiar bufora
-    if(buffer.size() != input.gcount()){
+    if(buffer.size() != input.gcount()){ // https://en.cppreference.com/w/cpp/io/basic_istream/gcount
         auto tmp = std::vector<char>(buffer.begin(), buffer.begin() + input.gcount());
         buffer = tmp;
     }
@@ -59,6 +58,7 @@ auto encrypt(std::filesystem::path const& file,
         }
 
     }
+    // https://en.cppreference.com/w/cpp/io/basic_istream/gcount
     output.write(&buffer[0],input.gcount());
 
     if(buffer.size() != input.gcount()){
@@ -103,7 +103,7 @@ auto encrypt(std::filesystem::path const& file,
         }
     };
 
-    auto imgFile = sf::Image();
+    auto imgFile = sf::Image(); // https://www.sfml-dev.org/documentation/2.6.1/classsf_1_1Image.php
     imgFile.loadFromFile(file.string());
     auto x = int(0);
     auto y = int(0);
@@ -113,9 +113,15 @@ auto encrypt(std::filesystem::path const& file,
 
         if(i == bitMessage.size()) break;
         biasColor(pixel.r, bitMessage.at(i));
-        if(i + 1 == bitMessage.size()) break;
+        if(i + 1 == bitMessage.size()){
+            imgFile.setPixel(x, y, pixel);
+            break;
+        }
         biasColor(pixel.g, bitMessage.at(i + 1));
-        if(i + 2 == bitMessage.size()) break;
+        if(i + 2 == bitMessage.size()){
+            imgFile.setPixel(x, y, pixel);
+            break;
+        }
         biasColor(pixel.b, bitMessage.at(i + 2));
 
         imgFile.setPixel(x, y, pixel);
@@ -133,6 +139,7 @@ auto encrypt(std::filesystem::path const& file,
 auto prepareMessage(std::string& message) -> void {
     auto sizeOfMessage = int(message.size());
     auto firstNumber = char(53);
+    for (auto& character: message) character -= 7;
     //Pierwsze 4 bajty -> długość wiadomości
     for (int i = 0; i < 4; ++i) {
         message.insert(i, 1, char(firstNumber + ((sizeOfMessage >> (32 - 8 * (i + 1))) & 255)));
@@ -147,21 +154,7 @@ auto f_encrypt(std::filesystem::path const& file, std::string message) -> void {
     if(message.size() > getMaxMessageSize(sizeOfImage)){
         throw std::logic_error(fmt::format("A message can not be encrypt in file {}!", file.filename().string()));
     }
-
     prepareMessage(message);
-
-    // DEBUG
-//    {
-//        for (auto c : message) {
-//            fmt::print("{} ", int(c));
-//        }
-//        fmt::println("");
-//        for (auto c : message) {
-//            fmt::print("{0:b} ", int(c));
-//        }
-//        fmt::println("");
-//    }
-
     switch(extension){
         case FileFormat::BMP:
             BMP::encrypt(file, sizeOfImage, message);
@@ -185,8 +178,8 @@ auto f_check(std::filesystem::path const& file, std::string const& message) -> v
     auto numberOfChar = message.size();
     auto sizeOfImage = sizeOfImageHelper(file);
     if(numberOfChar <= getMaxMessageSize(sizeOfImage)){
-        fmt::println("A message can be encrypt in file {}!", file.filename().string());
+        fmt::println("The message can be encrypt in file {}!", file.filename().string());
     } else {
-        throw std::logic_error(fmt::format("The message can not be encrypt in file {}!", file.filename().string()));
+        throw std::logic_error(fmt::format("The message can not be encrypt in file {}!\nIt has {} characters too much!", file.filename().string(), numberOfChar - getMaxMessageSize(sizeOfImage)));
     }
 }
