@@ -70,9 +70,7 @@ auto main(const int argc, const char* argv[]) -> int {
 
     try{switch (choseFlag) {
         case Flag::INCORRECT:
-            break;
         case Flag::HELP:
-            checkNumOfArguments(1);
             break;
         case Flag::INFO:    // Sprawdzenie, czy są dokładnie dwa argumenty
         case Flag::DECRYPT: // [flaga, ścieżka do pliku]
