@@ -1,5 +1,4 @@
 #include "functions.hpp"
-#include "fmt/ranges.h"
 
 namespace BMP {
 auto encrypt(std::filesystem::path const& file,

@@ -1,7 +1,6 @@
-#include <fstream>
 #include "functions.hpp"
-#include "fmt/core.h"
 #include "fmt/chrono.h"
+
 auto f_info(std::filesystem::path const& file) -> void {
     fmt::println("Information about file: {}", file.filename().string());
     // File extension
