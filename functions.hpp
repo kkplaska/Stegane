@@ -7,7 +7,7 @@
 #include <stdexcept>
 #include "fmt/core.h"
 #include "SFML/Graphics/Image.hpp"
-#include <SFML/Graphics/Color.hpp>
+#include "SFML/Graphics/Color.hpp"
 
 struct SizeOfImage {
     const int width;

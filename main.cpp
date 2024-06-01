@@ -37,14 +37,14 @@ auto main(const int argc, const char* argv[]) -> int {
     }
 
     // Lambdy
-    auto checkNumOfArguments = [&argc](int n) -> void {
+    auto checkNumOfArguments = [&argc](int n, bool too) -> void {
         ++n;
         if (argc == n){
             return;
-        } else if (argc < n) {
-            throw std::logic_error("The program has been launched with too few arguments!");
-        } else {
+        } else if (argc > n) {
             throw std::logic_error("The program has been launched with too many arguments!");
+        } else if (too){
+            throw std::logic_error("The program has been launched with too few arguments!");
         }
     };
     auto checkFile = [&argv]() -> void {
@@ -70,15 +70,17 @@ auto main(const int argc, const char* argv[]) -> int {
 
     try{switch (choseFlag) {
         case Flag::INCORRECT:
+            break;
         case Flag::HELP:
+            checkNumOfArguments(1, false);
             break;
         case Flag::INFO:    // Sprawdzenie, czy są dokładnie dwa argumenty
         case Flag::DECRYPT: // [flaga, ścieżka do pliku]
-            checkNumOfArguments(2);
+            checkNumOfArguments(2, true);
             break;
         case Flag::ENCRYPT: // Sprawdzenie, czy są dokładnie trzy argumenty
         case Flag::CHECK:   // [flaga, ścieżka do pliku, wiadomość]
-            checkNumOfArguments(3);
+            checkNumOfArguments(3, true);
             break;
     }} catch (std::exception const& e){
         fmt::println("{}", e.what());
