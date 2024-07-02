@@ -27,9 +27,9 @@ auto f_help() -> void {
     auto messageToPrint =
             std::string(
             "+----------------------------------+\n"
-            "| Project_Steganography.exe - help |\n"
+            "| stegane.exe - help |\n"
             "+----------------------------------+\n"
-            "Project_Steganography.exe [FLAG] [FILEPATH] [MESSAGE]"
+            "stegane.exe [FLAG] [FILEPATH] [MESSAGE]"
             "\n"
             "\n"
             "DESCRIPTION:"

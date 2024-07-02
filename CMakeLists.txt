@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.25)
-project(Project_Steganography)
+project(stegane)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static-libstdc++ -static-libgcc")
@@ -32,7 +32,7 @@ set(SOURCE_FILES
         decrypto.cpp
 )
 
-add_executable(Project_Steganography
+add_executable(stegane
         main.cpp
         functions.hpp
         crypto.cpp
@@ -41,4 +41,4 @@ add_executable(Project_Steganography
         decrypto.cpp
 )
 
-target_link_libraries(Project_Steganography fmt sfml-graphics)
+target_link_libraries(stegane fmt sfml-graphics)
