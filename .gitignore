@@ -1,3 +1,5 @@
 # Ignore any file in this directory
 /cmake-build-debug/
 /.gitignore
+/.idea/*
+/test*
